@@ -1,11 +1,14 @@
 package com.assignment.compassgps
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.location.Location
 import android.util.AttributeSet
 import android.view.View
+import android.widget.TextView
 import kotlin.math.min
 
 class CompassView(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
@@ -24,8 +27,12 @@ class CompassView(context: Context?, attrs: AttributeSet?) : View(context, attrs
     private var direction = 0f
     private var px = 0
     private var py = 0
-    private var textHeight = 0
 
+    private var textHeight = 0
+    private var currentLatitude: Double = 0.0
+    private var currentLongitude: Double= 0.0
+    private var locNumber: Int= 0
+    var locData = arrayListOf<locationData>()
 
     init {
         black = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -74,11 +81,13 @@ class CompassView(context: Context?, attrs: AttributeSet?) : View(context, attrs
         canvas?.save()
         canvas.rotate(rotationDegreeValue, px.toFloat(), py.toFloat())
         canvas?.restore()
-        drawCompassCircle(canvas)
+        drawCompassCircleTwo(canvas)
+        //drawCompassCircle(canvas)
         drawFaceLine(canvas)
 
-
     }
+
+
 
     private fun drawFaceLine(canvas: Canvas) {
 
@@ -109,7 +118,7 @@ class CompassView(context: Context?, attrs: AttributeSet?) : View(context, attrs
         canvas.drawCircle(px.toFloat(), py.toFloat(), radius.toFloat(), black)
         canvas.drawCircle(px.toFloat(), py.toFloat(), radius/2.toFloat(), ltblack)
 
-
+        canvas.drawCircle(width / 2.toFloat(), width / 2.toFloat(), 5.toFloat(), red)
         for (i in 0..3) {
             canvas.drawLine(px.toFloat(), (px - radius).toFloat(), py.toFloat(), (py - radius + 50).toFloat(), red!!)
             canvas.save()
@@ -147,9 +156,108 @@ class CompassView(context: Context?, attrs: AttributeSet?) : View(context, attrs
     }
 
 
+
+    public fun drawCompassCircleTwo(canvas: Canvas) {
+        px = canvas.width / 2
+        py = canvas.height / 2
+        radius = px -80
+        val textWidth = 10
+        val cadinalX = px - textWidth / 2
+        val cadinalY = py - radius - 60
+
+        val bitmap = Bitmap.createBitmap(
+            canvas.width,
+            canvas.height,
+            Bitmap.Config.ARGB_8888
+        )
+        val canvasbitmap = Canvas(bitmap)
+        canvasbitmap.save()
+
+        canvasbitmap.rotate(-rotationDegreeValue, px.toFloat(), py.toFloat())
+
+        canvas.drawCircle(px.toFloat(), py.toFloat(), radius.toFloat(), black)
+        canvas.drawCircle(px.toFloat(), py.toFloat(), radius/2.toFloat(), ltblack)
+
+        if(!locData.isNullOrEmpty()) {
+
+            for (obj in locData) {
+                var distance = distanceFromCurrentLocation(currentLatitude.toDouble(),currentLongitude.toDouble(),obj.latitude.toDouble(),obj.longitude.toDouble())
+                canvasbitmap.drawCircle((width / 2)+distance.toFloat(), width / 2.toFloat(), 5.toFloat(), red)
+            }
+        }
+        for (i in 0..3) {
+            canvasbitmap.drawLine(px.toFloat(), (px - radius).toFloat(), py.toFloat(), (py - radius + 50).toFloat(), red!!)
+            canvasbitmap.save()
+            canvasbitmap.translate(-10f, -10f)
+            when (i) {
+                0 -> dirString = north.toString()
+                1 -> dirString = east.toString()
+                2 -> dirString = south.toString()
+                3 -> dirString = west.toString()
+                else -> {
+                }
+            }
+            /*
+            if(i==0){canvas.drawText(dirString!!, cadinalX.toFloat(), cadinalY.toFloat(), red!!)}
+              else{canvas.drawText(dirString!!, cadinalX.toFloat(), cadinalY.toFloat(), dkBlack!!)}
+             */
+
+            if(i==0){
+                canvasbitmap.drawText(dirString!!,(px + radius * Math.sin((-direction).toDouble() / 180 * Math.PI)).toFloat(),
+                    (py - radius * Math.cos((-direction).toDouble() / 180 * Math.PI)).toFloat(), red!!)
+            }
+            else{
+                canvasbitmap.drawText(dirString!!,(px + radius * Math.sin((-direction).toDouble() / 180 * Math.PI)).toFloat(),
+                    (py - radius * Math.cos((-direction).toDouble() / 180 * Math.PI)).toFloat(), dkBlack!!)
+            }
+
+            canvasbitmap.restore()
+            canvasbitmap.rotate(90f, this.px.toFloat(), this.py.toFloat())
+        }
+        canvasbitmap.restore()
+
+        canvas.save()
+        canvas.drawBitmap(bitmap, px - width/2 .toFloat(), px - width/2.toFloat(), null)
+        canvas.restore()
+
+    }
+
+
     fun updateCompassRotaion(rotationDegreeValue: Float) {
         this.rotationDegreeValue = rotationDegreeValue
         invalidate()
+    }
+
+    fun updateLocationPointer(latitudeValue: Double, longitudeValue:Double) {
+        this.currentLatitude = latitudeValue
+        this.currentLongitude = longitudeValue
+        if(latitudeValue != 0.0 && longitudeValue != 0.0)
+        {
+            locNumber=locNumber+1
+
+            var obj: locationData = locationData(
+                Id =locNumber,
+                latitude =latitudeValue ,
+                longitude=longitudeValue
+            )
+
+            locData.add(obj)
+        }
+        invalidate()
+    }
+
+    fun distanceFromCurrentLocation(curntLat: Double, curntLon: Double, lat2: Double, lon2: Double): Double {
+
+        var locationA = Location("point A")
+        locationA.setLatitude(curntLat)
+        locationA.setLongitude(curntLon)
+        var locationB = Location("point B")
+        locationB.setLatitude(lat2)
+        locationB.setLongitude(lon2)
+
+        var distance: Double = locationA.distanceTo(locationB).toDouble()
+
+        return distance
     }
 }
 
