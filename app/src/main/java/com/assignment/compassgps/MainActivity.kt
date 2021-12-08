@@ -2,22 +2,28 @@ package com.assignment.compassgps
 
 import android.Manifest
 import android.content.Context
+import android.content.DialogInterface
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.location.Location
+import android.location.LocationListener
 import android.location.LocationManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.Settings
 import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import com.google.android.material.snackbar.Snackbar
 
-class MainActivity : AppCompatActivity() {
+class MainActivity<SomeException> : AppCompatActivity(), LocationListener,SensorEventListener  {
 
     private lateinit var compassViewData: CompassView
     private lateinit var senesorManager: SensorManager
@@ -32,7 +38,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var deleteTracking: Button
     private lateinit var sanckbarLayout: LinearLayout
     private lateinit var locationManager: LocationManager
-    
+    var gpsEnabled = false
+    var networkEnabled = false
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,16 +57,31 @@ class MainActivity : AppCompatActivity() {
         sanckbarLayout = findViewById<LinearLayout>(R.id.linear_layout)
 
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+
         startTracking.setOnClickListener(object : View.OnClickListener {
             override fun onClick(p0: View?) {
-                addLocationListener()
+                try {
+                    gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+                    networkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+                }
+                catch(exe: Exception ) {
+
+                }
+                checkGpsEnable()
+
+                if (gpsEnabled && networkEnabled) {
+                    addLocationListener()
+                }
             }
         })
 
         stopTracking.setOnClickListener(object : View.OnClickListener {
             override fun onClick(p0: View?) {
 
-                //locationManager.removeUpdates(this);
+                locationManager.removeUpdates(this@MainActivity)
+                latitude.setText("Latitude: NA" )
+                longitude.setText("Longitude: NA ")
             }
         })
 
@@ -69,28 +92,46 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
+    private fun checkGpsEnable() {
+        if (!gpsEnabled && !networkEnabled) {
+            // notify user
+            AlertDialog.Builder(this)
+                .setMessage(R.string.gps_network_not_enabled)
+                .setPositiveButton(R.string.open_location_settings,
+                    DialogInterface.OnClickListener { paramDialogInterface, paramInt ->
+                        this.startActivity(
+                            Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                        )
+                    })
+                .setNegativeButton(R.string.Cancel, null)
+                .show()
+
+        }
+    }
+
     private fun addRotationListener() {
 
         if (senesorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR) != null) {
-            senesorManager.registerListener( object : SensorEventListener {
-                    override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
-                    }
+            senesorManager.registerListener(this,senesorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR), SensorManager.SENSOR_DELAY_UI)
+                /* senesorManager.registerListener( object : SensorEventListener {
+                         override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
+                         }
 
-                    override fun onSensorChanged(p0: SensorEvent?) {
+                         override fun onSensorChanged(p0: SensorEvent?) {
 
-                        SensorManager.getRotationMatrixFromVector(rtnMatrix, p0!!.values)
-                        SensorManager.getOrientation(rtnMatrix, orientationValue)
+                             SensorManager.getRotationMatrixFromVector(rtnMatrix, p0!!.values)
+                             SensorManager.getOrientation(rtnMatrix, orientationValue)
 
-                        orientationValue[0] = Math.toDegrees(orientationValue[0].toDouble()).toFloat()
-                        orientationValue[1] = Math.toDegrees(orientationValue[1].toDouble()).toFloat()
-                        orientationValue[2] = Math.toDegrees(orientationValue[2].toDouble()).toFloat()
+                             orientationValue[0] = Math.toDegrees(orientationValue[0].toDouble()).toFloat()
+                             orientationValue[1] = Math.toDegrees(orientationValue[1].toDouble()).toFloat()
+                             orientationValue[2] = Math.toDegrees(orientationValue[2].toDouble()).toFloat()
 
-                        rtnValue = orientationValue[0]
-                        compassViewData.updateCompassRotaion(orientationValue[0])
-                    }
-                }, senesorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR),
-                SensorManager.SENSOR_DELAY_UI
-            )
+                             rtnValue = orientationValue[0]
+                             compassViewData.updateCompassRotaion(orientationValue[0])
+                         }
+                     }, senesorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR),
+                     SensorManager.SENSOR_DELAY_UI
+                 )*/
         }
     }
 
@@ -103,12 +144,23 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 500, 0f
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 0f,this)
+
+     /*  locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 0f, object :
+            LocationListener {
+            override fun onLocationChanged(p0: Location) {
+
+                latitude.setText("Latitude: " + p0.latitude)
+                longitude.setText("Longitude: " + p0.longitude)
+                compassViewData.updateLocationPointer(p0.latitude,p0.longitude)
+            }
+        })*/
+       /* locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 500, 0f
         ) { p0 ->
             latitude.setText("Latitude: " + p0.latitude)
             longitude.setText("Longitude: " + p0.longitude)
             compassViewData.updateLocationPointer(p0.latitude,p0.longitude)
-        }
+        }*/
 
 
     }
@@ -127,6 +179,30 @@ class MainActivity : AppCompatActivity() {
                 snackbar.show()
             }
         }
+    }
+
+
+    override fun onLocationChanged(p0: Location) {
+        latitude.setText("Latitude: " + p0.latitude)
+        longitude.setText("Longitude: " + p0.longitude)
+        compassViewData.updateLocationPointer(p0.latitude,p0.longitude)
+    }
+
+    override fun onSensorChanged(p0: SensorEvent?) {
+
+        SensorManager.getRotationMatrixFromVector(rtnMatrix, p0!!.values)
+        SensorManager.getOrientation(rtnMatrix, orientationValue)
+
+        orientationValue[0] = Math.toDegrees(orientationValue[0].toDouble()).toFloat()
+        orientationValue[1] = Math.toDegrees(orientationValue[1].toDouble()).toFloat()
+        orientationValue[2] = Math.toDegrees(orientationValue[2].toDouble()).toFloat()
+
+        rtnValue = orientationValue[0]
+        compassViewData.updateCompassRotaion(orientationValue[0])
+    }
+
+    override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
+
     }
 }
 

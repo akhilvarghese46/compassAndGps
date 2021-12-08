@@ -4,4 +4,7 @@
     <string name="compass_east">E</string>
     <string name="compass_south">S</string>
     <string name="compass_west">W</string>
+    <string name="gps_network_not_enabled">To continue, turn on device location.</string>
+    <string name="open_location_settings">Open location settings</string>
+    <string name="Cancel">Cancel</string>
 </resources>
