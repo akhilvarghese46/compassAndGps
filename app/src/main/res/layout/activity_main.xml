@@ -38,7 +38,7 @@
         </com.assignment.compassgps.CompassView>
         <View
             android:layout_width="1dp"
-            android:layout_height="50dp"
+            android:layout_height="4dp"
             android:layout_weight="0" />
 
         <LinearLayout
@@ -71,6 +71,33 @@
                 android:text="Delete"
                 app:backgroundTint="#9A0808" />
 
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+            <Button
+                android:id="@+id/btn_savewaypoit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:text="Save"
+                app:backgroundTint="#9A0808" />
+            <Button
+                android:id="@+id/btn_frwrdwaypoit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:text="Forward"
+                app:backgroundTint="#9A0808" />
+            <Button
+                android:id="@+id/btn_backdwaypoit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:text="backword"
+                app:backgroundTint="#9A0808" />
         </LinearLayout>
 
     </LinearLayout>
