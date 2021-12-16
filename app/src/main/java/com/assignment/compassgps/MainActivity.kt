@@ -41,6 +41,7 @@ class MainActivity<SomeException> : AppCompatActivity(), LocationListener,Sensor
     private lateinit var deleteTracking: Button
     private lateinit var saveWayPoints: Button
     private lateinit var sanckbarLayout: LinearLayout
+    private lateinit var waypintTrigger: LinearLayout
     private lateinit var locationManager: LocationManager
     private lateinit var jsonData: String
     var gpsEnabled = false
@@ -60,6 +61,8 @@ class MainActivity<SomeException> : AppCompatActivity(), LocationListener,Sensor
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        waypintTrigger = findViewById<LinearLayout>(R.id.waypintTrigger)
+        waypintTrigger.setVisibility(View.INVISIBLE)
 
         compassViewData = findViewById<View>(R.id.compass_view) as CompassView
         getSharedValue()
@@ -81,11 +84,14 @@ class MainActivity<SomeException> : AppCompatActivity(), LocationListener,Sensor
         saveWayPoints = findViewById<Button>(R.id.btn_savewaypoit)
         sanckbarLayout = findViewById<LinearLayout>(R.id.linear_layout)
 
+
+
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
 
         startTracking.setOnClickListener(object : View.OnClickListener {
             override fun onClick(p0: View?) {
+                waypintTrigger.setVisibility(View.VISIBLE)
                 try {
                     gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
                     networkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
@@ -111,6 +117,7 @@ class MainActivity<SomeException> : AppCompatActivity(), LocationListener,Sensor
 
         stopTracking.setOnClickListener(object : View.OnClickListener {
             override fun onClick(p0: View?) {
+                waypintTrigger.setVisibility(View.INVISIBLE)
 
                 locationManager.removeUpdates(this@MainActivity)
                 latitude.setText("Latitude: NA" )
@@ -120,6 +127,23 @@ class MainActivity<SomeException> : AppCompatActivity(), LocationListener,Sensor
 
         deleteTracking.setOnClickListener(object : View.OnClickListener {
             override fun onClick(p0: View?) {
+
+                val builder = AlertDialog.Builder(this@MainActivity,R.style.CustomAlertDialog)
+                builder.setMessage("Do you want to delete waypoints?")
+                    .setCancelable(true)
+                    .setPositiveButton("Yes") { dialog, id ->
+                        // Dismiss the dialog
+                        var editor: SharedPreferences.Editor = sharePreferences.edit()
+                        editor.remove("locData")
+                        editor.apply()
+                        dialog.dismiss()
+                    }
+                    .setNegativeButton("No") { dialog, id ->
+                        // Dismiss the dialog
+                        dialog.dismiss()
+                    }
+                val alert = builder.create()
+                alert.show()
 
             }
         })

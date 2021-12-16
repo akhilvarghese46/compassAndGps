@@ -23,6 +23,7 @@ class CompassView(context: Context?, attrs: AttributeSet?) : View(context, attrs
     private var dirString: String  = "N"
     private var radius: Int =0
     private var black:Paint
+    private var blacktext:Paint
     private var red:Paint
     private var dkBlack:Paint
     private var ltblack:Paint
@@ -40,11 +41,13 @@ class CompassView(context: Context?, attrs: AttributeSet?) : View(context, attrs
 
     init {
 
-
+        blacktext= Paint(Paint.ANTI_ALIAS_FLAG)
         black = Paint(Paint.ANTI_ALIAS_FLAG)
         ltblack = Paint(Paint.ANTI_ALIAS_FLAG)
         red = Paint(Paint.ANTI_ALIAS_FLAG)
         dkBlack= Paint(Paint.ANTI_ALIAS_FLAG)
+
+        blacktext.setColor(Color.argb(255, 0, 0, 0))
 
         red.setColor(Color.argb(255, 255, 0, 0))
         black.setColor(Color.argb(255, 0, 0, 0))
@@ -106,7 +109,7 @@ class CompassView(context: Context?, attrs: AttributeSet?) : View(context, attrs
     canvas.drawLine(px.toFloat(), py.toFloat(),
            (px + radius * Math.sin(-direction.toDouble())).toFloat(),
            (py - radius * Math.cos(-direction.toDouble())).toFloat(),
-           black
+        dkBlack
        )
         canvas?.restore()
     }
@@ -133,14 +136,37 @@ class CompassView(context: Context?, attrs: AttributeSet?) : View(context, attrs
 
         canvas.drawCircle(px.toFloat(), py.toFloat(), radius.toFloat(), black)
         canvas.drawCircle(px.toFloat(), py.toFloat(), radius/2.toFloat(), dkBlack)
-        canvas.drawCircle(px.toFloat(), py.toFloat(), 5.toFloat(), red)
+        //canvas.drawCircle(px.toFloat(), py.toFloat(), 5.toFloat(), red)
+
+
+
+        canvas.drawCircle(( Math.sin((0).toDouble() / 180 * Math.PI)).toFloat(),
+            ( Math.cos((0).toDouble() / 180 * Math.PI)).toFloat(), 5.toFloat(), red)
 
         if(!locData.isNullOrEmpty()) {
-
+            val bitmap = Bitmap.createBitmap(
+                canvas.width,
+                canvas.height,
+                Bitmap.Config.ARGB_8888
+            )
+            val canvasTwo = Canvas(bitmap)
             for (obj in locData) {
                 var distance = distanceFromCurrentLocation(currentLatitude.toDouble(),currentLongitude.toDouble(),obj.latitude.toDouble(),obj.longitude.toDouble())
-                canvas.drawCircle((width / 2)+distance.toFloat(), width / 2.toFloat(), 5.toFloat(), red)
+
+                var bearing = getBearingValue(currentLatitude, currentLongitude, obj.latitude, obj.longitude)
+
+                canvasTwo.rotate(bearing.toFloat(), px.toFloat(), py.toFloat())
+                canvasTwo.save()
+                canvas.drawText(
+                    obj.Id.toString(),(width / 2)+distance.toFloat(), (width / 2)+distance.toFloat(), blacktext)
+                canvasTwo.drawCircle((width / 2)+distance.toFloat(), (width / 2)+distance.toFloat(), 5.toFloat(), red)
+                canvasTwo.restore()
+                  /*  canvas.drawText(
+                    obj.Id.toString(),(width / 2)+distance.toFloat(), width / 2.toFloat(), red!!)  */              /*canvas.drawText(
+                    obj.Id.toString(),(px * Math.sin((30).toDouble() / 180 * Math.PI)).toFloat(),
+                    (py  * Math.cos((30).toDouble() / 180 * Math.PI)).toFloat(), red!!)*/
             }
+            canvas.drawBitmap(bitmap, px - width/2 .toFloat(), px - width/2.toFloat(), null)
         }
         for (i in 0..3) {
             canvas.drawLine(px.toFloat(), (px - radius).toFloat(), py.toFloat(), (py - radius + 50).toFloat(), dkBlack!!)
@@ -223,6 +249,18 @@ class CompassView(context: Context?, attrs: AttributeSet?) : View(context, attrs
         var distance: Double = locationA.distanceTo(locationB).toDouble()
 
         return distance
+    }
+
+    protected fun getBearingValue(startLat: Double, startLng: Double, endLat: Double, endLng: Double): Double {
+        val latitude1 = Math.toRadians(startLat)
+        val latitude2 = Math.toRadians(endLat)
+        val longDiff = Math.toRadians(endLng - startLng)
+        val y = Math.sin(longDiff) * Math.cos(latitude2)
+        val x =
+            Math.cos(latitude1) * Math.sin(latitude2) - Math.sin(latitude1) * Math.cos(latitude2) * Math.cos(
+                longDiff
+            )
+        return (Math.toDegrees(Math.atan2(y, x)) + 360) % 360
     }
 }
 
