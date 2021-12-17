@@ -34,16 +34,24 @@ class MainActivity<SomeException> : AppCompatActivity(), LocationListener,Sensor
     var orientationValue: FloatArray = FloatArray(4) { 0f }
     var rtnValue: Float = 0.0f
 
-    private lateinit var latitude: TextView
+    //private lateinit var latitude: TextView
     private lateinit var longitude: TextView
+    private lateinit var distance: TextView
     private lateinit var startTracking: Button
     private lateinit var stopTracking: Button
     private lateinit var deleteTracking: Button
     private lateinit var saveWayPoints: Button
+    private lateinit var forwardButton: Button
+    private lateinit var backwardButton: Button
     private lateinit var sanckbarLayout: LinearLayout
     private lateinit var waypintTrigger: LinearLayout
     private lateinit var locationManager: LocationManager
-    private lateinit var jsonData: String
+
+    private  var nearLat:Double=  0.0
+    private  var nearLog:Double =  0.0
+
+    private var firstForwordBit: Boolean = true
+    private var firstBackwordBit: Boolean = true
     var gpsEnabled = false
     var networkEnabled = false
     private lateinit var sharePreferences: SharedPreferences
@@ -76,7 +84,8 @@ class MainActivity<SomeException> : AppCompatActivity(), LocationListener,Sensor
         senesorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         addRotationListener()
 
-        latitude = findViewById<TextView>(R.id.latitude)
+        //latitude = findViewById<TextView>(R.id.latitude)
+        distance = findViewById<TextView>(R.id.distance)
         longitude = findViewById<TextView>(R.id.longitude)
         startTracking = findViewById<Button>(R.id.btn_start)
         stopTracking = findViewById<Button>(R.id.btn_stop)
@@ -84,10 +93,10 @@ class MainActivity<SomeException> : AppCompatActivity(), LocationListener,Sensor
         saveWayPoints = findViewById<Button>(R.id.btn_savewaypoit)
         sanckbarLayout = findViewById<LinearLayout>(R.id.linear_layout)
 
-
+        forwardButton = findViewById<Button>(R.id.btn_frwrdwaypoit)
+        backwardButton = findViewById<Button>(R.id.btn_backdwaypoit)
 
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-
 
         startTracking.setOnClickListener(object : View.OnClickListener {
             override fun onClick(p0: View?) {
@@ -120,7 +129,7 @@ class MainActivity<SomeException> : AppCompatActivity(), LocationListener,Sensor
                 waypintTrigger.setVisibility(View.INVISIBLE)
 
                 locationManager.removeUpdates(this@MainActivity)
-                latitude.setText("Latitude: NA" )
+               // latitude.setText("Latitude: NA" )
                 longitude.setText("Longitude: NA ")
             }
         })
@@ -136,6 +145,8 @@ class MainActivity<SomeException> : AppCompatActivity(), LocationListener,Sensor
                         var editor: SharedPreferences.Editor = sharePreferences.edit()
                         editor.remove("locData")
                         editor.apply()
+                        splocData.clear()
+                        compassViewData.locData.clear()
                         dialog.dismiss()
                     }
                     .setNegativeButton("No") { dialog, id ->
@@ -158,13 +169,144 @@ class MainActivity<SomeException> : AppCompatActivity(), LocationListener,Sensor
 
             }
         })
+
+        forwardButton.setOnClickListener(object : View.OnClickListener {
+            override fun onClick(p0: View?) {
+                if(firstForwordBit) {
+                    var compDataLen = compassViewData.locData.size
+                    var currentLat = compassViewData.currentLatitude
+                    var currentLong = compassViewData.currentLongitude
+                    nearLat = compassViewData.locData[compDataLen - 1].latitude
+                    nearLog = compassViewData.locData[compDataLen - 1].longitude
+                    var nearId = compassViewData.locData[compDataLen - 1].Id
+                    compassViewData.locData[compDataLen - 1].isDestination = true
+
+                    var nearDistance = compassViewData.distanceFromCurrentLocation(
+                        currentLat,
+                        currentLong,
+                        nearLat,
+                        nearLog
+                    )
+
+
+                    for (data in compassViewData.locData) {
+                        var distance = compassViewData.distanceFromCurrentLocation(
+                            currentLat,
+                            currentLong,
+                            data.latitude,
+                            data.longitude
+                        )
+                        data.distance = distance.toFloat()
+                        if (nearDistance > distance) {
+                            for (data in compassViewData.locData) {
+                                data.isDestination = false
+                            }
+                            nearDistance = distance
+                            nearLat = data.latitude
+                            nearLog = data.longitude
+                            data.isDestination = true
+
+                        }
+                    }
+
+                    firstForwordBit = false
+
+                }
+                else{
+                    val event: locationData? = compassViewData.locData.find { it.latitude == nearLat && it.longitude==nearLog}
+                    if (event != null&&compassViewData.locData.size>1)
+                    {
+
+                        var newPosition = event.Id-1
+                        val newevent: locationData? = compassViewData.locData.find { it.Id == newPosition}
+                        if(newevent!=null) {
+                            for (data in compassViewData.locData) {
+                                data.isDestination=false
+                            }
+                            newevent?.isDestination = true
+                            nearLat = newevent?.latitude!!
+                            nearLog = newevent?.longitude
+                            //compassViewData.updateCurrentPoint(newevent!!.latitude, newevent!!.longitude)
+                        }
+                    }
+                }
+            }
+        })
+
+        backwardButton.setOnClickListener(object : View.OnClickListener {
+            override fun onClick(p0: View?) {
+                if(firstBackwordBit) {
+                    var compDataLen = compassViewData.locData.size
+                    var currentLat = compassViewData.currentLatitude
+                    var currentLong = compassViewData.currentLongitude
+                    nearLat = compassViewData.locData[compDataLen - 1].latitude
+                    nearLog = compassViewData.locData[compDataLen - 1].longitude
+                    var nearId = compassViewData.locData[compDataLen - 1].Id
+                    compassViewData.locData[compDataLen - 1].isDestination = true
+
+                    var nearDistance = compassViewData.distanceFromCurrentLocation(
+                        currentLat,
+                        currentLong,
+                        nearLat,
+                        nearLog
+                    )
+
+
+                    for (data in compassViewData.locData) {
+                        var distance = compassViewData.distanceFromCurrentLocation(
+                            currentLat,
+                            currentLong,
+                            data.latitude,
+                            data.longitude
+                        )
+                        data.distance = distance.toFloat()
+                        if (nearDistance > distance) {
+                            for (data in compassViewData.locData) {
+                                data.isDestination = false
+                            }
+                            nearDistance = distance
+                            nearLat = data.latitude
+                            nearLog = data.longitude
+                            data.isDestination = true
+
+                        }
+                    }
+
+                    firstBackwordBit = false
+
+                }
+                else{
+                    val event: locationData? = compassViewData.locData.find { it.latitude == nearLat && it.longitude==nearLog}
+                    if (event != null&&compassViewData.locData.size>1)
+                    {
+
+                        var newPosition = event.Id+1
+                        val newevent: locationData? = compassViewData.locData.find { it.Id == newPosition}
+                        if(newevent != null){
+                            for (data in compassViewData.locData) {
+                                data.isDestination=false
+                            }
+                            newevent?.isDestination= true
+                            nearLat = newevent?.latitude!!
+                            nearLog = newevent?.longitude
+                        //compassViewData.updateCurrentPoint(newevent!!.latitude, newevent!!.longitude)
+                        }
+                    }
+                }
+
+            }
+        })
+
+
+
+        compassViewData.setOnChangeListnerDistance(object:CompassView.OnChangeListnerFromCompassView{
+
+            override fun onChangeDistance(p1: Float) {
+                distance.text = p1.toString()
+            }
+              })
     }
 
-
-
-    fun stringToWords(s : String): List<String> = s.trim().splitToSequence("locationData")
-        .filter { it.isNotEmpty() } // or: .filter { it.isNotBlank() }
-        .toList()
 
     private fun checkGpsEnable() {
         if (!gpsEnabled && !networkEnabled) {
@@ -222,7 +364,7 @@ class MainActivity<SomeException> : AppCompatActivity(), LocationListener,Sensor
 
 
     override fun onLocationChanged(p0: Location) {
-        latitude.setText("Latitude: " + p0.latitude)
+        //latitude.setText("Latitude: " + p0.latitude)
         longitude.setText("Longitude: " + p0.longitude)
         currentLatitude = p0.latitude
         currentLongitude = p0.longitude
@@ -266,16 +408,24 @@ class MainActivity<SomeException> : AppCompatActivity(), LocationListener,Sensor
         if (waypointary != null) {
             for (item in waypointary)
             {
-                locNumber =locNumber+1
+
                 savedwayPointAry.add(item)
                 var newitem = item.split("|")?.toList()
 
-                var obj: locationData = locationData(
-                    Id = locNumber,
-                    latitude =newitem[0].toDouble() ,
-                    longitude=newitem[1].toDouble()
-                )
-                splocData.add(obj)
+                if(newitem.size == 2) {
+
+                    var obj: locationData = locationData(
+                        Id = locNumber,
+                        latitude = newitem[0].toDouble(),
+                        longitude = newitem[1].toDouble(),
+                        isDestination = false
+                    )
+                    splocData.add(obj)
+
+                    compassViewData.lastLatitudeValue = newitem[0].toDouble()
+                    compassViewData.lastLongitudeValue = newitem[1].toDouble()
+                }
+                locNumber =locNumber+1
             }
 
         }

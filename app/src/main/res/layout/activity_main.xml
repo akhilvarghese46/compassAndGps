@@ -13,21 +13,6 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:orientation="vertical">
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/latitude"
-            android:text="Latitude: N/A"
-            android:textSize="20sp"
-            />
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/longitude"
-            android:text="Longitude: N/A"
-            android:textSize="20sp"
-            />
-
 
         <com.assignment.compassgps.CompassView
             android:id="@+id/compass_view"
@@ -40,6 +25,32 @@
             android:layout_width="1dp"
             android:layout_height="4dp"
             android:layout_weight="0" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Distance:"
+            android:textSize="20sp"
+            />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/distance"
+                android:text=" N/A"
+                android:textSize="20sp"
+                />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/longitude"
+            android:text="Longitude: N/A"
+            android:textSize="20sp"
+            /></LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
