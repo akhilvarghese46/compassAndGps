@@ -174,23 +174,23 @@ class CompassView(context: Context?, attrs: AttributeSet?) : View(context, attrs
 
 
                 if(distance<500) {
-                    var newRadious = ((distance*3779.5275591) * radius) / (500*3779.5275591)
+                    var newRadious = (distance* radius) / (500)
 
-                    println("newRadious------"+newRadious)
                         canvasTwo.rotate(bearing.toFloat(), px.toFloat(), py.toFloat())
                         canvasTwo.save()
                         if(obj.isDestination){
                             canvasTwo.drawCircle(
-                                (width / 2) -  newRadious.toFloat(),
-                                (width / 2) -  newRadious.toFloat(),
+                                (((width / 2) - newRadious*.7)).toFloat(),
+                                (((width / 2) - newRadious*.7)).toFloat(),
                                 10.toFloat(),
                                 blueColor
                             )
+                            changeListner?.onChangeDistance(distance.toFloat())
                         }else{
 
                             canvasTwo.drawCircle(
-                                (width / 2) - newRadious.toFloat(),
-                                (width / 2) - newRadious.toFloat(),
+                                (((width / 2) - newRadious*.7)).toFloat(),
+                                (((width / 2) - newRadious*.7)).toFloat(),
                                 10.toFloat(),
                                 greenMark
                             )

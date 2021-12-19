@@ -7,6 +7,8 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -21,6 +23,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import com.google.android.material.snackbar.Snackbar
@@ -69,6 +72,12 @@ class MainActivity<SomeException> : AppCompatActivity(), LocationListener,Sensor
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        val actionBar: ActionBar?
+        actionBar = supportActionBar
+        val colorDrawable = ColorDrawable(Color.parseColor("#5E1802"))
+        actionBar?.setBackgroundDrawable(colorDrawable)
+
         waypintTrigger = findViewById<LinearLayout>(R.id.waypintTrigger)
         waypintTrigger.setVisibility(View.INVISIBLE)
 
@@ -147,6 +156,7 @@ class MainActivity<SomeException> : AppCompatActivity(), LocationListener,Sensor
                         editor.apply()
                         splocData.clear()
                         compassViewData.locData.clear()
+                        savedwayPointAry.clear()
                         dialog.dismiss()
                     }
                     .setNegativeButton("No") { dialog, id ->
@@ -206,10 +216,12 @@ class MainActivity<SomeException> : AppCompatActivity(), LocationListener,Sensor
                             nearLog = data.longitude
                             data.isDestination = true
 
+                            firstForwordBit = false
                         }
+
                     }
 
-                    firstForwordBit = false
+
 
                 }
                 else{
@@ -217,7 +229,7 @@ class MainActivity<SomeException> : AppCompatActivity(), LocationListener,Sensor
                     if (event != null&&compassViewData.locData.size>1)
                     {
 
-                        var newPosition = event.Id-1
+                        var newPosition = event.Id+1
                         val newevent: locationData? = compassViewData.locData.find { it.Id == newPosition}
                         if(newevent!=null) {
                             for (data in compassViewData.locData) {
@@ -268,11 +280,12 @@ class MainActivity<SomeException> : AppCompatActivity(), LocationListener,Sensor
                             nearLat = data.latitude
                             nearLog = data.longitude
                             data.isDestination = true
+                            firstBackwordBit = false
 
                         }
                     }
 
-                    firstBackwordBit = false
+
 
                 }
                 else{
@@ -280,7 +293,7 @@ class MainActivity<SomeException> : AppCompatActivity(), LocationListener,Sensor
                     if (event != null&&compassViewData.locData.size>1)
                     {
 
-                        var newPosition = event.Id+1
+                        var newPosition = event.Id-1
                         val newevent: locationData? = compassViewData.locData.find { it.Id == newPosition}
                         if(newevent != null){
                             for (data in compassViewData.locData) {
