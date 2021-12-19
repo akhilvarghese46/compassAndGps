@@ -26,6 +26,12 @@
 
 
       </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:background="#5b5b5b">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -104,21 +110,23 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
                 android:text="Save"
-                app:backgroundTint="#9A0808" />
+                app:backgroundTint="#5E1802" />
             <Button
                 android:id="@+id/btn_frwrdwaypoit"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
                 android:text="Forward"
-                app:backgroundTint="#9A0808" />
+                app:backgroundTint="#5E1802" />
             <Button
                 android:id="@+id/btn_backdwaypoit"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
                 android:text="backword"
-                app:backgroundTint="#9A0808" />
+                app:backgroundTint="#5E1802" />
         </LinearLayout>
+    </LinearLayout>
+
 </LinearLayout>
 

@@ -38,7 +38,7 @@ class MainActivity<SomeException> : AppCompatActivity(), LocationListener,Sensor
     var rtnValue: Float = 0.0f
 
     //private lateinit var latitude: TextView
-    private lateinit var longitude: TextView
+    //private lateinit var longitude: TextView
     private lateinit var distance: TextView
     private lateinit var startTracking: Button
     private lateinit var stopTracking: Button
@@ -95,7 +95,7 @@ class MainActivity<SomeException> : AppCompatActivity(), LocationListener,Sensor
 
         //latitude = findViewById<TextView>(R.id.latitude)
         distance = findViewById<TextView>(R.id.distance)
-        longitude = findViewById<TextView>(R.id.longitude)
+       // longitude = findViewById<TextView>(R.id.longitude)
         startTracking = findViewById<Button>(R.id.btn_start)
         stopTracking = findViewById<Button>(R.id.btn_stop)
         deleteTracking = findViewById<Button>(R.id.btn_delete)
@@ -139,7 +139,7 @@ class MainActivity<SomeException> : AppCompatActivity(), LocationListener,Sensor
 
                 locationManager.removeUpdates(this@MainActivity)
                // latitude.setText("Latitude: NA" )
-                longitude.setText("Longitude: NA ")
+                //longitude.setText("Longitude: NA ")
             }
         })
 
@@ -378,7 +378,7 @@ class MainActivity<SomeException> : AppCompatActivity(), LocationListener,Sensor
 
     override fun onLocationChanged(p0: Location) {
         //latitude.setText("Latitude: " + p0.latitude)
-        longitude.setText("Longitude: " + p0.longitude)
+       // longitude.setText("Longitude: " + p0.longitude)
         currentLatitude = p0.latitude
         currentLongitude = p0.longitude
         compassViewData.updateCurrentPoint(currentLatitude,currentLongitude)
